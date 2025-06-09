@@ -1,11 +1,47 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import AddStudentForm from "@/components/students/AddStudentForm";
+import AddGradeForm from "@/components/grades/AddGradeForm";
+import ReportsPage from "@/components/reports/ReportsPage";
+import { mockGroups, mockStudents } from "@/data/mockData";
+import { Student, Grade } from "@/types/journal";
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<"dashboard" | "groups">(
-    "dashboard",
-  );
+  const [currentView, setCurrentView] = useState<
+    "dashboard" | "groups" | "reports"
+  >("dashboard");
+  const [showAddStudent, setShowAddStudent] = useState(false);
+  const [showAddGrade, setShowAddGrade] = useState(false);
+  const [selectedStudentForGrade, setSelectedStudentForGrade] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
+  const handleAddStudent = (
+    studentData: Omit<Student, "id" | "totalScore" | "grades">,
+  ) => {
+    // Имитация добавления студента
+    console.log("Добавлен новый студент:", studentData);
+    setShowAddStudent(false);
+    alert("Студент успешно добавлен!");
+  };
+
+  const handleAddGrade = (gradeData: Omit<Grade, "id">) => {
+    // Имитация добавления оценки
+    console.log("Добавлена новая оценка:", gradeData);
+    setShowAddGrade(false);
+    setSelectedStudentForGrade(null);
+    alert("Оценка успешно выставлена!");
+  };
+
+  const handleGradeStudent = (student: Student) => {
+    setSelectedStudentForGrade({
+      id: student.id,
+      name: `${student.lastName} ${student.firstName} ${student.middleName || ""}`.trim(),
+    });
+    setShowAddGrade(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 to-blue-50">
@@ -43,6 +79,18 @@ const Index = () => {
               <Icon name="Users" size={20} />
               <span>Группы</span>
             </button>
+
+            <button
+              onClick={() => setCurrentView("reports")}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                currentView === "reports"
+                  ? "bg-primary text-white"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              }`}
+            >
+              <Icon name="FileText" size={20} />
+              <span>Отчеты</span>
+            </button>
           </div>
         </div>
       </nav>
@@ -63,68 +111,8 @@ const Index = () => {
                 </p>
               </div>
 
-              {/* Быстрые действия */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                <div className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-                  <div className="bg-primary/10 p-3 rounded-lg w-fit mb-4">
-                    <Icon name="Users" className="text-primary" size={24} />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Управление группами
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Создавайте группы, добавляйте студентов и управляйте
-                    успеваемостью
-                  </p>
-                  <button
-                    onClick={() => setCurrentView("groups")}
-                    className="text-primary font-medium hover:text-primary/80 transition-colors"
-                  >
-                    Перейти к группам →
-                  </button>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-                  <div className="bg-blue-100 p-3 rounded-lg w-fit mb-4">
-                    <Icon
-                      name="BarChart3"
-                      className="text-blue-600"
-                      size={24}
-                    />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Аналитика
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Просматривайте статистику успеваемости и генерируйте отчеты
-                  </p>
-                  <button className="text-blue-600 font-medium hover:text-blue-500 transition-colors">
-                    Открыть аналитику →
-                  </button>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-                  <div className="bg-green-100 p-3 rounded-lg w-fit mb-4">
-                    <Icon
-                      name="FileText"
-                      className="text-green-600"
-                      size={24}
-                    />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Отчеты
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Экспортируйте данные об успеваемости в различных форматах
-                  </p>
-                  <button className="text-green-600 font-medium hover:text-green-500 transition-colors">
-                    Создать отчет →
-                  </button>
-                </div>
-              </div>
-
               {/* Статистика */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div className="bg-white rounded-lg p-6 border border-gray-200">
                   <div className="flex items-center justify-between">
                     <div>
@@ -177,6 +165,63 @@ const Index = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Быстрые действия */}
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Быстрые действия
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <button
+                    onClick={() => setShowAddStudent(true)}
+                    className="flex items-center space-x-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                  >
+                    <Icon name="UserPlus" className="text-blue-600" size={24} />
+                    <div className="text-left">
+                      <p className="font-medium text-blue-900">
+                        Добавить студента
+                      </p>
+                      <p className="text-sm text-blue-700">
+                        Зарегистрировать нового студента
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => setCurrentView("groups")}
+                    className="flex items-center space-x-3 p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+                  >
+                    <Icon name="Users" className="text-green-600" size={24} />
+                    <div className="text-left">
+                      <p className="font-medium text-green-900">
+                        Управление группами
+                      </p>
+                      <p className="text-sm text-green-700">
+                        Просмотр и редактирование групп
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => setCurrentView("reports")}
+                    className="flex items-center space-x-3 p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors"
+                  >
+                    <Icon
+                      name="FileText"
+                      className="text-purple-600"
+                      size={24}
+                    />
+                    <div className="text-left">
+                      <p className="font-medium text-purple-900">
+                        Создать отчет
+                      </p>
+                      <p className="text-sm text-purple-700">
+                        Аналитика и экспорт данных
+                      </p>
+                    </div>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -186,9 +231,18 @@ const Index = () => {
             {/* Импортируем и отображаем Groups */}
             <div className="max-w-7xl mx-auto px-6 py-8">
               <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  Ваши группы
-                </h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-gray-900">
+                    Ваши группы
+                  </h2>
+                  <button
+                    onClick={() => setShowAddStudent(true)}
+                    className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center space-x-2"
+                  >
+                    <Icon name="UserPlus" size={16} />
+                    <span>Добавить студента</span>
+                  </button>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex items-center justify-between mb-3">
@@ -227,71 +281,76 @@ const Index = () => {
                   Студенты группы ИТ-21-1
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-primary/10 p-2 rounded-full">
-                        <Icon name="User" className="text-primary" size={20} />
+                  {mockStudents.map((student) => (
+                    <div
+                      key={student.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-primary/10 p-2 rounded-full">
+                          <Icon
+                            name="User"
+                            className="text-primary"
+                            size={20}
+                          />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {student.lastName} {student.firstName}{" "}
+                            {student.middleName}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {student.studentNumber}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          Петров Александр Сергеевич
-                        </p>
-                        <p className="text-sm text-gray-500">ST-2023-001</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
-                        88.5
-                      </span>
-                      <p className="text-xs text-gray-500 mt-1">2 работы</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-primary/10 p-2 rounded-full">
-                        <Icon name="User" className="text-primary" size={20} />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          Иванова Мария Александровна
-                        </p>
-                        <p className="text-sm text-gray-500">ST-2023-002</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
-                        83.0
-                      </span>
-                      <p className="text-xs text-gray-500 mt-1">2 работы</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-primary/10 p-2 rounded-full">
-                        <Icon name="User" className="text-primary" size={20} />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          Смирнов Дмитрий
-                        </p>
-                        <p className="text-sm text-gray-500">ST-2023-003</p>
+                      <div className="flex items-center space-x-3">
+                        <div className="text-right">
+                          <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
+                            {student.totalScore}
+                          </span>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {student.grades.length} работ
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleGradeStudent(student)}
+                          className="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                        >
+                          Оценить
+                        </button>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold">
-                        91.2
-                      </span>
-                      <p className="text-xs text-gray-500 mt-1">0 работ</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
         )}
+
+        {currentView === "reports" && <ReportsPage />}
       </main>
+
+      {/* Модальные окна */}
+      {showAddStudent && (
+        <AddStudentForm
+          groupId="1"
+          onSubmit={handleAddStudent}
+          onCancel={() => setShowAddStudent(false)}
+        />
+      )}
+
+      {showAddGrade && selectedStudentForGrade && (
+        <AddGradeForm
+          studentId={selectedStudentForGrade.id}
+          studentName={selectedStudentForGrade.name}
+          onSubmit={handleAddGrade}
+          onCancel={() => {
+            setShowAddGrade(false);
+            setSelectedStudentForGrade(null);
+          }}
+        />
+      )}
     </div>
   );
 };
